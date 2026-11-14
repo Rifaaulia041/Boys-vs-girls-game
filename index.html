@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BOYS VS GIRLS</title>
+<style>
+:root{--bg:#090d1b;--panel:#141b31;--muted:#9ba8c7;--blue:#42a5ff;--pink:#ff5ca8;--gold:#ffd166}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -10%,#26345e 0,#10172b 42%,#080b16 100%);font-family:system-ui,Arial,sans-serif;color:#fff;padding:22px}
+.wrap{max-width:980px;margin:auto}
+header{text-align:center;margin:10px 0 24px}
+.kicker{color:#aebce0;letter-spacing:4px;font-size:12px;font-weight:800}
+h1{font-size:clamp(34px,8vw,64px);line-height:1;margin:10px 0;background:linear-gradient(90deg,#65baff,#fff,#ff75b7);background-clip:text;color:transparent;text-shadow:0 8px 35px #0005}
+.sub{color:var(--muted);margin:0}
+.status{display:flex;justify-content:center;align-items:center;gap:10px;margin:20px auto 16px;color:#dbe5ff;font-weight:700}
+.dot{width:9px;height:9px;border-radius:50%;background:#4ce0a1;box-shadow:0 0 12px #4ce0a1}
+.scoreboard{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.team{position:relative;overflow:hidden;border-radius:22px;padding:22px 18px;text-align:center;border:1px solid #ffffff22;background:linear-gradient(145deg,#1d3557,#111a30);box-shadow:0 15px 40px #0005}
+.team.girls{background:linear-gradient(145deg,#63264c,#21152f)}
+.team h2{margin:0;font-size:clamp(19px,4vw,28px);letter-spacing:1px}
+.score{font-size:clamp(64px,14vw,104px);font-weight:950;line-height:1.15;margin:6px 0;text-shadow:0 8px 24px #0006;font-variant-numeric:tabular-nums}
+.boys .score{color:#8ed0ff}.girls .score{color:#ffabd0}
+.progress{height:10px;background:#ffffff20;border-radius:20px;overflow:hidden;margin:8px 0 14px}
+.fill{height:100%;width:0%;border-radius:20px;transition:width .35s ease}
+.boys .fill{background:linear-gradient(90deg,#238bff,#a3e0ff)}
+.girls .fill{background:linear-gradient(90deg,#ff4b9a,#ffc0dd)}
+.controls{display:flex;gap:9px;justify-content:center;flex-wrap:wrap}
+button{border:0;border-radius:13px;padding:12px 16px;font-size:15px;font-weight:850;color:#fff;cursor:pointer;transition:transform .12s,filter .12s}
+button:active{transform:scale(.96)}
+.boys button{background:linear-gradient(135deg,#1688ff,#4169e1)}
+.girls button{background:linear-gradient(135deg,#ed4597,#a8328b)}
+.small{padding:9px 13px;font-size:13px;background:#ffffff18;border:1px solid #ffffff20}
+.center{margin:18px auto;padding:16px;border-radius:18px;background:#111a30;border:1px solid #ffffff18;text-align:center}
+.center strong{color:var(--gold)}
+.winner{min-height:28px;font-size:19px;font-weight:900;color:var(--gold);margin:6px}
+.tools{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.tools button{background:#263451;border:1px solid #ffffff20}
+.tools .reset{background:#a83245}
+.hint{text-align:center;color:#9ba8c7;font-size:13px;line-height:1.6;margin:18px auto 0;max-width:700px}
+.log{margin-top:18px;padding:16px;border-radius:16px;background:#0e1528;border:1px solid #ffffff15}
+.log h3{margin:0 0 8px;font-size:14px;color:#c9d6f4}
+#events{color:#aebbd8;font-size:13px;min-height:22px}
+.spark{position:fixed;pointer-events:none;font-size:24px;animation:pop .8s ease-out forwards}
+@keyframes pop{0%{transform:translateY(0) scale(.5);opacity:0}20%{opacity:1}100%{transform:translateY(-100px) scale(1.4);opacity:0}}
+@media(max-width:560px){body{padding:14px}.team{padding:17px 10px}.controls{gap:6px}button{padding:11px 12px;font-size:13px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<div class="kicker">PERTANDINGAN TIM • SIAPA PALING KUAT?</div>
+<h1>BOYS VS GIRLS</h1>
+<p class="sub">Kumpulkan poin dan rebut kemenangan!</p>
+</header>
+<div class="status"><span class="dot"></span><span id="statusText">PERTANDINGAN BERLANGSUNG</span></div>
+<section class="scoreboard">
+<div class="team boys">
+<h2>🔵 TEAM BOYS</h2><div class="score" id="boysScore">0</div>
+<div class="progress"><div class="fill" id="boysBar"></div></div>
+<div class="controls">
+<button onclick="add('boys',1)">+1 POIN</button>
+<button onclick="add('boys',5)">+5 POIN</button>
+<button class="small" onclick="add('boys',-1)">−1</button>
+</div>
+</div>
+<div class="team girls">
+<h2>💗 TEAM GIRLS</h2><div class="score" id="girlsScore">0</div>
+<div class="progress"><div class="fill" id="girlsBar"></div></div>
+<div class="controls">
+<button onclick="add('girls',1)">+1 POIN</button>
+<button onclick="add('girls',5)">+5 POIN</button>
+<button class="small" onclick="add('girls',-1)">−1</button>
+</div>
+</div>
+</section>
+<div class="center">
+<div>🎯 TARGET KEMENANGAN: <strong id="targetLabel">50 POIN</strong></div>
+<div class="winner" id="winner">Ayo mulai pertandingan!</div>
+<div class="tools">
+<button onclick="changeTarget()">UBAH TARGET</button>
+<button onclick="undo()">↶ BATALKAN POIN</button>
+<button class="reset" onclick="resetGame()">RESET PERTANDINGAN</button>
+</div>
+</div>
+<div class="log"><h3>📣 AKTIVITAS TERAKHIR</h3><div id="events">Belum ada poin yang ditambahkan.</div></div>
+<p class="hint">Versi game browser: tombol poin dapat digunakan oleh host/operator. Integrasi komentar dan hadiah TikTok LIVE belum terhubung otomatis.</p>
+</div>
+<script>
+let scores={boys:0,girls:0}, target=50, history=[];
+function add(team,amount){
+ if(document.getElementById('statusText').textContent==='PERTANDINGAN SELESAI') return;
+ const old={...scores}; scores[team]=Math.max(0,scores[team]+amount);
+ if(scores[team]===old[team])return;
+ history.push(old); render();
+ const label=team==='boys'?'Team Boys':'Team Girls';
+ document.getElementById('events').textContent=`${label} ${amount>0?'mendapat':'kehilangan'} ${Math.abs(amount)} poin.`;
+ if(amount>0)celebrate(team);
+}
+function render(){
+ document.getElementById('boysScore').textContent=scores.boys;
+ document.getElementById('girlsScore').textContent=scores.girls;
+ document.getElementById('boysBar').style.width=Math.min(100,scores.boys/target*100)+'%';
+ document.getElementById('girlsBar').style.width=Math.min(100,scores.girls/target*100)+'%';
+ const win=scores.boys>=target?'🔵 TEAM BOYS MENANG!':scores.girls>=target?'💗 TEAM GIRLS MENANG!':'';
+ document.getElementById('winner').textContent=win||'Ayo kumpulkan poin!';
+ document.getElementById('statusText').textContent=win?'PERTANDINGAN SELESAI':'PERTANDINGAN BERLANGSUNG';
+}
+function undo(){if(!history.length)return;scores=history.pop();render();document.getElementById('events').textContent='Poin terakhir dibatalkan.'}
+function resetGame(){scores={boys:0,girls:0};history=[];render();document.getElementById('events').textContent='Pertandingan baru dimulai.'}
+function changeTarget(){const n=prompt('Masukkan target poin (misalnya 50):',target);if(n===null)return;const v=Number(n);if(Number.isInteger(v)&&v>0&&v<=10000){target=v;document.getElementById('targetLabel').textContent=v+' POIN';render()}else alert('Masukkan angka bulat lebih dari 0.')}
+function celebrate(team){const e=document.createElement('div');e.className='spark';e.textContent=team==='boys'?'⚡':'💖';e.style.left=(30+Math.random()*40)+'vw';e.style.top='65vh';document.body.appendChild(e);setTimeout(()=>e.remove(),850)}
+render();
+</script>
+</body>
+</html>
